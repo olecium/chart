@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import './App.css';
 import Papa from 'papaparse';
 import { csv } from 'd3';
@@ -9,19 +9,7 @@ const getNodesData = async (): Promise<INode[]> => {
   const data = await csv('data/FSDnodeProperties.csv').then(data => {
     let newData = [] as INode[];
     if (data) {
-      // newData = data.map(x => {
-      //   let obj = {} as INode;
-      //   if (x.NodeId && x.StartDate && x.EndDate) {
-      //     obj = {
-      //       id: +x.NodeId,
-      //       StartDate: x.StartDate,
-      //       EndDate: x.EndDate
-      //     };
-      //   }
-      //   return obj;
-      // });
       data.forEach(x => {
-        // let obj = {} as INode;
         if (x.NodeId && x.StartDate && x.EndDate) {
           newData.push({
             id: +x.NodeId,
@@ -63,9 +51,10 @@ const getMatrixData = async (): Promise<string[]> => {
 // }
 
 function App() {
-  const [nodes, setNodes] = React.useState<INode[]>([]);
-  const [matrix, setMatrix] = React.useState<string[]>([]);
-  const [graphData, setGraphData] = React.useState<IGraphData>({ nodes: [], links: [] });
+  const effectRan = useRef<boolean>(false);
+  const [nodes, setNodes] = React.useState<INode[] | undefined>(undefined);
+  const [matrix, setMatrix] = React.useState<string[] | undefined>(undefined);
+  const [graphData, setGraphData] = React.useState<IGraphData | undefined>();
 
   const start = useMemo(() => async () => {
     setNodes(await getNodesData());
@@ -77,29 +66,32 @@ function App() {
   }, [start]);
 
   useEffect(() => {
-    console.log(nodes);
+    if (effectRan.current === true) {
+      if (matrix && nodes) {
+        let links = [] as ILink[];
+        if (matrix && matrix.length > 0) {
+          for (let i = 0; i < Number(matrix[0].length); i++) {
+            const linkedNode = matrix[i].indexOf('1');
 
-    let links = [] as ILink[];
-    if (matrix && matrix.length > 0) {
-      for (let i = 0; i < Number(matrix[0].length); i++) {
-        const linkedNode = matrix[i].indexOf('1');
-
-        if (linkedNode !== -1) {
-          // find NodeId equal to i and add LinkedNode property to INode object which is equal to linkednode 
-          // linked node is the index of matrix column
-          links.push({ source: i + 1, target: linkedNode });
+            if (linkedNode !== -1) {
+              links.push({ source: i + 1, target: linkedNode });
+            }
+          }
         }
+        setGraphData({ nodes, links });
       }
     }
-    setGraphData({ nodes, links });
-    // console.log('newNodes', newNodes);
-    // console.log('links', links);
+    return () => {
+      effectRan.current = true;
+    }
   }, [matrix, nodes]);
 
-
+  console.log(graphData);
   return (
     <div className="App">
-      <Graph graphData={graphData} />
+      {graphData &&
+        <Graph graphData={graphData} />
+      }
     </div>
   );
 }
