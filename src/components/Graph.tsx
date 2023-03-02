@@ -1,4 +1,4 @@
-import { IGraphData } from "./interfaces";
+import { IGraphData } from "../interfaces/interfaces";
 import { useEffect, useRef } from 'react';
 import { SimulationNodeDatum, zoom } from "d3";
 import * as d3 from 'd3';

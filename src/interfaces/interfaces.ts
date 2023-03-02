@@ -9,7 +9,21 @@ export interface INode {
     EndDate: string;
 }
 
+export interface IChartData {
+    id: number;
+    start: Date;
+    end: Date;
+    dependencies: number[];
+    title: string;
+    completed: number;
+}
+
 export interface IGraphData {
     nodes: INode[];
     links: ILink[];
+}
+
+export interface IData {
+    nodes: any[],
+    matrix: any[]
 }
