@@ -85,11 +85,6 @@ const Chart = ({ data }: IChart) => {
     // const [initialBar, setInitialBar] = useState(null);
 
     const initializeCanvas = () => {
-        //   const canvas = document.createElement("canvas");
-        //   parentElt.appendChild(canvas);
-
-
-        //   const canvasWidth = canvas.outerWidth || DEFAULT_WIDTH;
         const canvasWidth1 = DEFAULT_WIDTH;
         const canvasHeight1 = HEADER_HEIGHT + (milestones.size * (DEFAULT_ROW_HEIGHT + (DEFAULT_ROW_PADDING * 2)));
         setCanvasWidth(canvasWidth1);
@@ -99,10 +94,6 @@ const Chart = ({ data }: IChart) => {
             .append('canvas')
             .attr('width', canvasWidth1)
             .attr('height', canvasHeight1);
-        //   var context = canvas.node().getContext('2d');
-
-        //   canvas.style.width = `${canvasWidth / SCALE_FACTOR}px`;
-        //   canvas.style.height = `${canvasHeight / SCALE_FACTOR}px`;
 
         const newCtx = canvas.node()?.getContext("2d");
         setCtx(newCtx);
