@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { IData, INode } from '../../interfaces/interfaces';
+import { IData } from '../../interfaces/interfaces';
 import Uploader from './../uploader/Uploader';
-import GanttChart from './GanttChart';
 import { IChartData } from './../../interfaces/interfaces';
 import Chart from './Chart';
 
@@ -71,7 +70,6 @@ function GanttApp() {
     const effectRan = useRef<boolean>(false);
     const [submited, setSubmited] = React.useState<boolean>(false);
     const [chartData, setChartData] = React.useState<IChartData[] | undefined>(undefined);
-    // const [matrix, setMatrix] = React.useState<string[] | undefined>(undefined);
 
     useEffect(() => {
         if (effectRan.current === true) {
@@ -111,13 +109,8 @@ function GanttApp() {
             }
 
             setChartData(newNodes);
-            // setMatrix(data.matrix);
         }
     };
-
-
-    console.log('chartData', chartData);
-    // console.log('matrix', matrix);
 
 
     return (

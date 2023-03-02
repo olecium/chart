@@ -15,7 +15,6 @@ import * as d3 from 'd3';
 import { IChartData } from "../../interfaces/interfaces";
 
 import {
-    SCALE_FACTOR,
     DEFAULT_ROW_HEIGHT,
     DEFAULT_WIDTH,
     DEFAULT_FONT_SIZE,
@@ -24,7 +23,6 @@ import {
     SLIDER_WIDTH,
     HEADER_BORDER_WIDTH,
     TODAY_MARKER_WIDTH,
-    CONNECTION_OFFSET,
     CONNECTION_ARROW_WIDTH,
     CONNECTION_ARROW_HEIGHT,
     CONNECTION_LINE_WIDTH,
@@ -34,18 +32,12 @@ import {
     HEADER_HEIGHT,
     RIGHT_SLIDER,
     LEFT_SLIDER,
-    EVENT_TYPE
 } from './config';
 
 import { roundRect } from './roundRect';
 
 interface IChart {
     data: IChartData[];
-}
-
-interface IMousePosition {
-    x: number;
-    y: number;
 }
 
 interface IBar {
@@ -66,8 +58,6 @@ interface IBar {
 
 const Chart = ({ data }: IChart) => {
 
-    console.log(data);
-    const effectRan = useRef<boolean>(false);
     const [milestones] = useState<Map<number, IChartData>>(new Map(data.map(milestone => [milestone.id, milestone])));
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>();
     const [overallDuration, setOverallDuration] = useState<number>();
@@ -81,9 +71,6 @@ const Chart = ({ data }: IChart) => {
     const [minStart, setMinStart] = useState<Date>();
     const [bars, setBars] = useState<IBar[]>();
     const [isMouseDragging, setIsMouseDragging] = useState<boolean>(false);
-    // const [initialMousePosition, setInitialMousePosition] = useState<IMousePosition>();
-    // const [initialBar, setInitialBar] = useState(null);
-
     const initializeCanvas = () => {
         const canvasWidth1 = DEFAULT_WIDTH;
         const canvasHeight1 = HEADER_HEIGHT + (milestones.size * (DEFAULT_ROW_HEIGHT + (DEFAULT_ROW_PADDING * 2)));
@@ -110,9 +97,6 @@ const Chart = ({ data }: IChart) => {
                 return [startD, startD]
             } else return [];
         });
-
-        //const minStart = minDate(...dates); // changed from dates to ...dates
-        //const maxEnd = maxDate(...dates); // changed from dates to ...dates
 
         const minStart = new Date(Math.min(...dates));
         const maxEnd = new Date(Math.max(...dates));
@@ -154,56 +138,6 @@ const Chart = ({ data }: IChart) => {
 
         setBars(bars);
     }
-
-    // const initializeEventHandlers = () => {
-    //     setSelectedBar(null);
-    //     setSelectedSlider(null);
-    //     setIsMouseDragging(false);
-    //     setInitialMousePosition({ x: 0, y: 0 });
-    //     setInitialBar(null);
-    // }
-
-    // /**
-    //  * Zooms in or out, depending on {@param factor}.
-    //  *
-    //  * @param {number} factor zooming factor
-    //  */
-    // const zoom = (factor: number) => {
-    //   if (factor < 1 && columnWidth <= MIN_COLUMN_WIDTH) {
-    //     console.error("Can not zoom out further");
-    //     return;
-    //   }
-
-    //   const originalDuration = overallDuration;
-
-    //     if(columnWidth && canvasWidth && columnDuration && originalDuration && minStart){
-    //         const newColumnWidth = Math.floor(columnWidth * factor);
-    //         setColumnWidth(newColumnWidth);
-
-
-    //         const overallColumns = Math.ceil(canvasWidth / newColumnWidth);
-    //         const overallDuration = columnDuration * overallColumns;
-
-    //         const durationDiff = overallDuration - originalDuration;
-
-    //         const newMinStart = addMilliseconds(minStart, durationDiff / -2);
-    //         setMinStart(newMinStart);
-    //         const NewMaxEnd = addMilliseconds(minStart, durationDiff / 2);
-    //         setMaxEnd(NewMaxEnd);
-
-    //         initializeBars();
-
-    //         render();
-    //     }
-    // }
-
-    // const barToEventDetail = ({ x, width, id }) => {
-    //   return {
-    //     ...milestones.get(id),
-    //     start: new Date(scaleDate(x)),
-    //     end: new Date(scaleDate(x + width)),
-    //   };
-    // }
 
     const drawColumn = (index: number) => {
 
@@ -258,7 +192,6 @@ const Chart = ({ data }: IChart) => {
             }
         }
     }
-
 
     const drawSlider = ({ x, y, height, isEven, isDragging }: IBar) => {
         if (ctx) {
@@ -440,29 +373,6 @@ const Chart = ({ data }: IChart) => {
         }
     }
 
-    /**
-     * Converts a date to a point on a chart
-     *
-     * @param {Date} date date to convert
-     * @returns {number} point (horizontal axis, x) on a chart on a scale
-     *
-     * linear interpolation of a point (x, y) between two known points (x0, y0) and (x1, y1):
-     *
-     * y = y0 + (x - x0) * ((y1 - y0) / (x1 - x0))
-     *
-     * in our case, x0 would be the minStart and x1 would be the maxEnd
-     * whilst y0 would be 0 and y1 would be canvasWidth
-     *
-     * and for any given point `date` (x) we are looking for corresponding x coordinate on canvas (y)
-     *
-     * so the equation is
-     *
-     * result = 0 + (date - minStart) * ((canvasWidth - 0) / (maxEnd - minStart))
-     *
-     * and since we know the (maxEnd - minStart) as overallDuration,
-     *
-     * result = (date - minStart) * (canvasWidth / overallDuration)
-     */
     const scaleX = (date: Date) => {
         if (minStart && overallDuration) {
             return Math.ceil((date.getTime() - minStart.getTime()) * (canvasWidth / overallDuration));
@@ -517,33 +427,6 @@ const Chart = ({ data }: IChart) => {
         </>
     );
 
-    /**
-     * Converts a position on a chart to a Date (timestamp, in fact).
-     *
-     * @param {number} x the point on a chart
-     * @returns {number} time, in millis, the corresponding date on a scale
-     *
-     * inverse to {@link scaleX} linear interpolation
-     *
-     * y = y0 + (x - x0) * ((y1 - y0) / (x1 - x0))
-     *
-     * x0 = 0
-     * y0 = minStart
-     *
-     * x1 = canvasWidth
-     * y1 = maxEnd
-     *
-     * y = minStart + (x - 0) * ((maxEnd - minStart) / (canvasWidth - 0))
-     *
-     * y = minStart + (x * (overallDuration / canvasWidth))
-     *
-     */
-
-    // const scaleDate = (x: number) => {
-    //     if(minStart && overallDuration) {
-    //         return Math.ceil(minStart.getTime() + (x * (overallDuration / canvasWidth)));
-    //     }
-    // }
 }
 
 export default Chart;
